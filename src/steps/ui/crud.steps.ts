@@ -1,0 +1,12 @@
+import { Given, When, Then, type DataTable } from '@cucumber/cucumber';
+import { QAWorld } from '../../support/world';
+import { compare } from '../../api/assertions';
+Given('una sesión válida en el portal', async function(this: QAWorld) { await this.portal.login(); });
+When('registro un documento nuevo en UI con estos datos', async function(this: QAWorld, table: DataTable) { const row = table.hashes()[0]; if (!row) throw new Error('Faltan datos'); this.input.monto = Number(row.monto); this.current = await this.portal.create(this.input); });
+Then('el documento creado en UI refleja todos sus datos', async function(this: QAWorld) { await this.portal.filter(this.input); await this.portal.verifyRow(this.input); await compare(await this.api.read(this.doc().id), this.doc(), this.evidence, 'Creación UI persiste en API'); });
+When('consulto el documento exacto en UI', async function(this: QAWorld) { await this.portal.filter(this.input); await this.portal.verifyRow(this.input); });
+Then('el detalle en UI corresponde al documento propio', async function(this: QAWorld) { await this.portal.detail(this.doc()); });
+When('cambio su monto a {int} en UI', async function(this: QAWorld, amount: number) { this.original = this.doc(); await this.portal.filter(this.input); this.input.monto = amount; this.current = await this.portal.edit(this.original, this.input); });
+Then('el cambio en UI persiste y conserva los demás datos', async function(this: QAWorld) { await this.portal.verifyRow(this.input); await this.portal.reload(); await this.portal.filter(this.input); await this.portal.verifyRow(this.input); await compare(await this.api.read(this.doc().id), this.doc(), this.evidence, 'Edición UI persiste en GET completo'); });
+When('elimino el documento en UI', async function(this: QAWorld) { await this.portal.filter(this.input); await this.portal.remove(this.doc()); });
+Then('el documento ya no existe en UI', async function(this: QAWorld) { await this.portal.absent(this.input); await this.portal.reload(); await this.portal.filter(this.input); await this.portal.absent(this.input); await this.api.absent(this.doc().id); await compare(await this.api.list({ rut: this.input.rutReceptor }, 0), [], this.evidence, 'UI eliminación confirmada en API'); });

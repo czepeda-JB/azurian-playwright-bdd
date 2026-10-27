@@ -1,0 +1,50 @@
+COMANDOS — PRÁCTICA AZURIAN ADAPTADA
+
+TERMINAL 1 — LABORATORIO (APP_PORT=3100 configurado)
+Set-Location "C:\Users\czepeda\Documents\com-azurian-qa-evaluacion"
+docker compose up -d --build
+docker compose ps
+Invoke-RestMethod "http://localhost:3100/api/health"
+
+TERMINAL 2 — SUITE (carpeta extraída del ZIP)
+Set-Location "C:\Users\czepeda\Documents\azurian-playwright-bdd"
+node --version
+# Requiere Node 22 o 24
+npm install
+npx playwright install chromium
+# Solo primera vez; no sobrescribir un .env ya configurado:
+Copy-Item .env.example .env
+# Verificar BASE_URL=http://localhost:3100 en .env
+npm run check
+npm run test:dry -- --format summary
+npm run clean
+npm test
+# Generar el reporte también si alguna prueba falla:
+npm run report:generate
+npm run report:open
+
+SIGUIENTES CORRIDAS
+npm run clean
+npm test
+npm run report:generate
+npm run report:open
+
+FILTROS
+npm run test:api
+npm run test:ui
+npm run test:crear
+npm run test:leer
+npm run test:editar
+npm run test:eliminar
+npm test -- --name "UI-CRUD-01"
+npm test -- --tags "@api and @editar"
+
+DETENER LABORATORIO
+# Ejecutar desde com-azurian-qa-evaluacion
+docker compose down
+
+NOTAS
+- Ajustar las rutas si extraíste la suite en otra carpeta.
+- Si usas puerto 3000, cambiar las URLs y BASE_URL.
+- Allure CLI necesita Java disponible en PATH.
+- No ejecutar clean entre las pruebas y la generación del reporte.

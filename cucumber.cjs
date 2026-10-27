@@ -1,0 +1,1 @@
+module.exports = { default: { paths: ['features/**/*.feature'], require: ['dist/support/**/*.js', 'dist/steps/**/*.js'], format: ['summary', 'allure-cucumberjs/reporter'], formatOptions: { resultsDir: 'allure-results' }, parallel: 1, retry: 0 } };
